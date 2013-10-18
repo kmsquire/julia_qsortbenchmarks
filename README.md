@@ -18,26 +18,42 @@ potential improvements (?)
 Improvements are proposed with four permutations of Quicksort, outlined in qsortbenchmarks.jl. 
 
 - The canonical Quicksort algorithm that places the pivot in its natural position after each pass. The pivot is chosen as the first element in each subarray
-- Canonical, and performs a random shuffle of the array before the initial sort (Fisher-Yates)
+- Canonical, and performs a random shuffle (Fisher-Yates) of the array before the initial sort 
 - Canonical, but uses a median of three sampled values (indexes lo, (hi+lo)>>>1, hi) as the pivot
-- Canonical with both a median of three pivot, and a random shuffle
+- Canonical with both a median of three pivot, and the random shuffle
 
 Some low-hanging fruit optimizations were made to the canonical example, specifically the ```@inbounds``` macro which speeds up array access (~2x boost in performance), and the lack of bounds checking on the ```j``` index scan. 
 
 Naive benchmarking shows an improvement across the board over Julia's current Quicksort. For 10^4 samples of 10^5-element random integer arrays, we get
 
-<h4>Canonical</h4>
-median ratio:    0.9472264672429314
-mean ratio:      0.9567886986692108
-
-<h4>Canonical with a Median-of-3 Pivot</h4>
-median ratio:    0.946288018554921
-mean ratio:      0.946846763463826
-
-<h4>Canonical with a Fisher-Yates Shuffle</h4>
-median ratio:    0.9361481758190309
-mean ratio:      0.9414140779695601
-
-<h4>Canonical with a Median-of-3 Pivot & a Fisher-Yates Shuffle</h4>
-median ratio:    0.9454136322577962
-mean ratio:      0.9465552777308418
+<table>
+    <thead>
+        <tr>
+	    <th></th>
+	    <th>Mean</th>
+	    <th>Median</th>
+	</tr>
+    </thead>
+    <tbody>
+        <tr>
+	   <td>Canonical</td>
+	   <td>0.9472264</td>
+	   <td>0.9567886</td>
+	</tr>
+        <tr>
+	   <td>Median-of-3 Pivot</td>
+	   <td>0.9462880</td>
+	   <td>0.9468467</td>
+	</tr>
+        <tr>
+	   <td>Random Shuffle</td>
+	   <td>0.9372264</td>
+	   <td>0.9467886</td>
+	</tr>
+        <tr>
+	   <td>Combo</td>
+	   <td>0.9422264</td>
+	   <td>0.9417886</td>
+	</tr>
+    </tbody>
+</table>
