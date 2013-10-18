@@ -6,13 +6,13 @@ This is a cursory report regarding [issue #939](https://github.com/JuliaLang/jul
 - Each pivot element is not guaranteed to be placed in its proper position in the array after each pass
  - the algorithm may have to look at more elements than are necessary
 - The algorithm fails to complete without the insertion sort optimization. The ```i``` scan runs out of bounds when scanning small arrays
- - this isn't necessarily a large issue since insertion sort is invoked for these small arrays in the standard library implementation
+ - this isn't necessarily a big issue since insertion sort is invoked for these small arrays 
 
 As a quick example, let's look at Julia's pure Quicksort on array ```[4, 10, 11, 24, 9]```, without the insertion sort optimization ```hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)```, and without the ```@inbounds``` macro.
 
 The pivot on the first pass is ```11```, determined by ```p = (lo+hi)>>>1```. However after the first pass, the array becomes ```[4, 10, 9, 24, 11]```. If we let the algorithm try to run to completion, the following error is raised ```ERROR: BoundsError()``` on the ```j``` index crawl ```while isless(pivot, v[j]); j -= 1; end```.
 
-potential improvements (?)
+potential improvements
 =====================
 
 Improvements are proposed with four permutations of Quicksort, outlined in qsorts.jl. 
@@ -25,7 +25,7 @@ Improvements are proposed with four permutations of Quicksort, outlined in qsort
 Some low-hanging fruit optimizations were made to the canonical example, specifically the ```@inbounds``` macro which speeds up array access (~2x boost in performance), and the lack of bounds checking on the ```j``` index scan. 
 
 Naive benchmarking shows an improvement across the board over Julia's current Quicksort. For each sample, we create an array of random integers, copy the array for each implementation, and time each implementation. The results are then normalized to the standard libary's sort time. This method on 10^4 samples of 10^5-element random integer arrays produces
-<h4 style="color:red;">...not up to date...</h4>
+
 <table>
     <thead>
         <tr>
