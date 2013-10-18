@@ -1,2 +1,0 @@
-arraylength = 10^6
-a = rand(Int8, 1, arraylength)
