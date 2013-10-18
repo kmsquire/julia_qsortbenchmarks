@@ -1,14 +1,14 @@
 motivation
 =====================
 
-This is a cursory report regarding JuliaLang#939. For primitive datatypes, Julia invokes Quicksort, so the general purpose here is to increase the performance of the standard library implementation of Quicksort. While looking at Julia's current implementation of Quicksort, several issues became apparent:
+This is a cursory report regarding [#939](https://github.com/JuliaLang/julia/issues/939?source=cc). Regarding the issue, for primitive datatypes, Julia invokes Quicksort, so the general purpose here is to increase the performance of the standard library implementation of Quicksort. While looking at Julia's current implementation of Quicksort, several issues became apparent:
 
 - Each pivot element is not guaranteed to be placed in its proper position in the array after each pass
--- the algorithm may have to look at more elements than are necessary
+ - the algorithm may have to look at more elements than are necessary
 - The algorithm fails to complete without the insertion sort optimization, on an array out-of-bounds exception
--- this isn't necessarily a big issue since in practice insertion sort is invoked for small arrays
+ - this isn't necessarily a big issue since in practice insertion sort is invoked for small arrays
 
-As a quick example, let's look at Julia's pure Quicksort on array ```a=[4, 10, 11, 24, 9]```, without the insertion sort optimization ```hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)```, and without the ```@inbounds``` macro.
+As a quick example, let's look at Julia's pure Quicksort on array ```[4, 10, 11, 24, 9]```, without the insertion sort optimization ```hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)```, and without the ```@inbounds``` macro.
 
 The pivot on the first pass is ```11```, determined by ```p = (lo+hi)>>>1```. However after the first pass, the array becomes ```a=[4, 10, 9, 24, 11]```. If we let the algorithm try to run to completion, the following error is raised ```ERROR: BoundsError()``` on the ```j``` index crawl ```while isless(pivot, v[j]); j -= 1; end```.
 
@@ -22,7 +22,7 @@ Improvements are proposed with four permutations of Quicksort, outlined in qsort
 - Canonical, but uses a median of three sampled values (indexes lo, (hi+lo)>>>1, hi) as the pivot
 - Canonical with both a median of three pivot, and a random shuffle
 
-Some low-hanging fruit optimizations were made to the canonical example, specifically the ```@inbounds``` macro which speeds up array access (~2x boost in performance), and the lack of bounds checking on the ```j``` index scan. Additionally, the array size below which insertion sort is invoked was changed from ```20``` to ```9``` based on some suggestions given online and empirical improvements. 
+Some low-hanging fruit optimizations were made to the canonical example, specifically the ```@inbounds``` macro which speeds up array access (~2x boost in performance), and the lack of bounds checking on the ```j``` index scan. 
 
 Naive benchmarking shows an improvement across the board over Julia's current Quicksort. For 10^4 samples of 10^5-element random integer arrays, we get
 
