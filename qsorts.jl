@@ -117,8 +117,8 @@ function qsort_c!(v, lo=1, hi=length(v))
         v[j], v[i] = v[i], v[j];
     end
     v[j], v[lo] = v[lo], v[j];
-    qsort_c!(v, lo, j-1);
-    qsort_c!(v, j+1, hi);
+    qsort_c_mp!(v, lo, j-1);
+    qsort_c_mp!(v, j+1, hi);
     return v;
 end
 
@@ -145,7 +145,7 @@ end
 # ------------------- Benchmarking ---------------------- #
 # ------------------------------------------------------- #
 
-bmark_algo = qsort_c_fy_mp!
+bmark_algo = qsort_c!
 
 a = 10^5
 b = rand(Int64, 1, a)
@@ -155,6 +155,9 @@ c = copy(b)
 
 qsort_stdlib!(c, 1, a)
 bmark_algo(b, 1, a)
+
+b = rand(Int64, 1, a)
+c = copy(b)
 
 tic()
 toq()
