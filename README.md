@@ -1,16 +1,16 @@
 motivation
 =====================
 
-This is a cursory report regarding [#939](https://github.com/JuliaLang/julia/issues/939?source=cc). Regarding the issue, for primitive datatypes, Julia invokes Quicksort, so the general purpose here is to increase the performance of the standard library implementation of Quicksort. While looking at Julia's current implementation of Quicksort, several issues became apparent:
+This is a cursory report regarding [issue #939](https://github.com/JuliaLang/julia/issues/939?source=cc). For primitive datatypes, Julia invokes Quicksort, so the general purpose here is to increase the performance of the standard library implementation of Quicksort. While looking at Julia's current implementation of Quicksort, several issues became apparent:
 
 - Each pivot element is not guaranteed to be placed in its proper position in the array after each pass
  - the algorithm may have to look at more elements than are necessary
 - The algorithm fails to complete without the insertion sort optimization, on an array out-of-bounds exception
- - this isn't necessarily a big issue since in practice insertion sort is invoked for small arrays
+ - this isn't necessarily a big issue since insertion sort is invoked for small arrays in the standard library implementation
 
 As a quick example, let's look at Julia's pure Quicksort on array ```[4, 10, 11, 24, 9]```, without the insertion sort optimization ```hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)```, and without the ```@inbounds``` macro.
 
-The pivot on the first pass is ```11```, determined by ```p = (lo+hi)>>>1```. However after the first pass, the array becomes ```a=[4, 10, 9, 24, 11]```. If we let the algorithm try to run to completion, the following error is raised ```ERROR: BoundsError()``` on the ```j``` index crawl ```while isless(pivot, v[j]); j -= 1; end```.
+The pivot on the first pass is ```11```, determined by ```p = (lo+hi)>>>1```. However after the first pass, the array becomes ```[4, 10, 9, 24, 11]```. If we let the algorithm try to run to completion, the following error is raised ```ERROR: BoundsError()``` on the ```j``` index crawl ```while isless(pivot, v[j]); j -= 1; end```.
 
 potential improvements (?)
 =====================
