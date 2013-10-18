@@ -1,0 +1,147 @@
+SMALL_THRESHOLD = 20
+SMALL_THRESHOLD_STDLIB = 20
+
+# insertion sort
+function isort(v, lo=1, hi=length(v))
+    for i = lo+1:hi
+        j = i
+        x = v[i]
+        while j > lo
+            if isless(x, v[j-1])
+                v[j] = v[j-1]
+                j -= 1
+                continue
+            end
+            break
+        end
+        v[j] = x
+    end
+    return v
+end
+
+# returns median of three values in array v
+function getmedpiv(v, a, b, c)
+
+    if isless(v[a], v[b])
+        if isless(v[b], v[c])
+            return b
+        elseif isless(v[a], v[c])
+            return c
+        else
+            return a
+        end
+    else
+        if isless(v[c], v[b])
+            return b
+        elseif isless(v[c], v[a])
+            return c
+        else
+            return a
+        end
+    end
+end
+
+# fisher-yates random shuffle
+function fyshuffle(v)
+    N = length(v);
+    @inbounds for i = length(v):0
+        j = rand(1:N-1);
+        v[i], v[j] = v[j], v[i];
+        N -= 1;
+    end
+end
+
+# canonical quicksort + fisher-yates shuffle
+function qsort_c_fy!(v, lo=1, hi=length(v))
+    fyshuffle(v)
+    qsort_c!(v)
+end
+
+# canonical quicksort + fisher-yates shuffle + median of 3 pivot
+function qsort_c_fy_mp!(v, lo=1, hi=length(v))
+    fyshuffle(v)
+    qsort_c_mp!(v)
+end
+
+function medpartition(v, lo, hi)
+    m = getmedpiv(v, lo, (lo+hi)>>>1, hi)
+    v[m], v[lo] = v[lo], v[m]
+    i, j = lo, hi+1;
+    pivot = v[lo]
+    while true;
+        while true;
+            i += 1;
+            isless(v[i], pivot) || break;
+            i == hi && break;
+        end
+        while true;
+            j -= 1;
+            isless(pivot, v[j]) || break;
+        end 
+        i >= j && break;
+        v[i], v[j] = v[j], v[i];
+    end
+    v[j], v[lo] = v[lo], v[j];
+    return j;
+end
+
+# canonical quicksort + median of 3 pivot
+function qsort_c_mp!(v, lo=1, hi=length(v))
+    @inbounds while lo < hi 
+        hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
+        j = medpartition(v, lo, hi);
+        qsort_c_mp!(v, lo, j-1);
+        qsort_c_mp!(v, j+1, hi);
+        return v;
+    end
+end
+
+function partition(v, lo, hi)
+    i, j = lo, hi+1;
+    pivot = v[lo]
+    while true;
+        i += 1;
+        while isless(v[i], pivot);
+            i == hi && break;
+            i += 1;
+        end
+        j -= 1;
+        while isless(pivot, v[j]);
+            j -= 1;                
+        end 
+        i >= j && break;
+        v[j], v[i] = v[i], v[j];
+    end
+    v[j], v[lo] = v[lo], v[j];
+    return j;
+end
+
+# canonical quicksort
+function qsort_c!(v, lo=1, hi=length(v))        
+    @inbounds while lo < hi 
+        hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
+        j = partition(v, lo, hi)
+        qsort_c!(v, lo, j-1);
+        qsort_c!(v, j+1, hi);
+        return v;
+    end
+end
+
+# quicksort as written for the standard library
+function qsort_stdlib!(v, lo=1, hi=length(v))
+    @inbounds while lo < hi
+        hi-lo <= SMALL_THRESHOLD_STDLIB && return isort(v, lo, hi)
+        pivot = v[(lo+hi)>>>1]
+        i, j = lo, hi
+        while true;
+            while isless(v[i], pivot); i += 1; end
+            while isless(pivot, v[j]); j -= 1; end
+            i <= j || break;
+            v[i], v[j] = v[j], v[i]
+            i += 1; j -= 1;
+        end
+        lo < j && qsort_stdlib!(v, lo, j)
+        lo = i
+    end
+    return v
+end
