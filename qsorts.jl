@@ -1,9 +1,9 @@
-SMALL_THRESHOLD = 20
-SMALL_THRESHOLD_STDLIB = 20
+const SMALL_THRESHOLD = 20
+const SMALL_THRESHOLD_STDLIB = 20
 
 # insertion sort
 function isort(v, lo=1, hi=length(v))
-    for i = lo+1:hi
+    @inbounds for i = lo+1:hi
         j = i
         x = v[i]
         while j > lo
@@ -117,9 +117,9 @@ function qsort_c!(v, lo=1, hi=length(v))
         v[j], v[i] = v[i], v[j];
     end
     v[j], v[lo] = v[lo], v[j];
-    qsort_c_mp!(v, lo, j-1);
-    qsort_c_mp!(v, j+1, hi);
-    return v;
+    qsort_c!(v, lo, j-1);
+    qsort_c!(v, j+1, hi);
+    return v;        
 end
 
 # quicksort as written for the standard library
@@ -147,7 +147,7 @@ end
 
 bmark_algo = qsort_c!
 
-a = 10^5
+a = 10^4
 b = rand(Int64, 1, a)
 c = copy(b)
 
@@ -156,23 +156,20 @@ c = copy(b)
 qsort_stdlib!(c, 1, a)
 bmark_algo(b, 1, a)
 
-b = rand(Int64, 1, a)
-c = copy(b)
-
 tic()
 toq()
 
 # ------------------- Benchmarking --------------------- #
 
-numsims = 10^4
+numsims = 10^2
 
 # arrays to store the sorting times
 
 qs_stdlib_times = Array(Float64, numsims)
 qs_test_times = Array(Float64, numsims)
 
-@inbounds for i = 1:numsims
-    
+for i = 1:numsims
+
     b = rand(Int64, 1, a)
     c = copy(b)
 
@@ -188,6 +185,6 @@ qs_test_times = Array(Float64, numsims)
     @assert issorted(b)
 
 end
-@show(median(qs_test_times))
+
 @show(median(qs_test_times./qs_stdlib_times))
 @show(mean(qs_test_times./qs_stdlib_times))
