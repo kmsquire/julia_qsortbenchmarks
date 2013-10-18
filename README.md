@@ -15,7 +15,7 @@ The pivot on the first pass is ```11```, determined by ```p = (lo+hi)>>>1```. Ho
 potential improvements (?)
 =====================
 
-Improvements are proposed with four permutations of Quicksort, outlined in qsortbenchmarks.jl. 
+Improvements are proposed with four permutations of Quicksort, outlined in qsorts.jl. 
 
 - The canonical Quicksort algorithm that places the pivot in its natural position after each pass. The pivot is chosen as the first element in each subarray
 - Canonical, and performs a random shuffle (Fisher-Yates) of the array before the initial sort 
