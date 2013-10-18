@@ -1,12 +1,17 @@
 motivation
 =====================
 
-This is a cursory report regarding [issue #939](https://github.com/JuliaLang/julia/issues/939?source=cc). For primitive datatypes, Julia invokes Quicksort, so the general purpose here is to increase the performance of the standard library implementation of Quicksort. While looking at Julia's current implementation of Quicksort, several issues became apparent:
+I started looking at Julia's Quicksort after finding [issue #939](https://github.com/JuliaLang/julia/issues/939?source=cc). The issue concerns the performance of ```sort!()```. For primitive datatypes, Julia invokes Quicksort, so the general purpose here is to increase the performance of the standard library implementation of Quicksort. 
+
+current implementation issues
+=====================
+
+While looking at Julia's current implementation of Quicksort, several issues became apparent:
 
 - Each pivot element is not guaranteed to be placed in its proper position in the array after each pass
  - the algorithm may have to look at more elements than are necessary
 - The algorithm fails to complete without the insertion sort optimization. The ```i``` scan runs out of bounds when scanning small arrays
- - this isn't necessarily a big issue since insertion sort is invoked for these small arrays 
+ - this isn't necessarily a huge issue since insertion sort is invoked for these small arrays 
 
 As a quick example, let's look at Julia's pure Quicksort on array ```[4, 10, 11, 24, 9]```, without the insertion sort optimization ```hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)```, and without the ```@inbounds``` macro.
 
