@@ -24,14 +24,14 @@ Improvements are proposed with four permutations of Quicksort, outlined in qsort
 
 Some low-hanging fruit optimizations were made to the canonical example, specifically the ```@inbounds``` macro which speeds up array access (~2x boost in performance), and the lack of bounds checking on the ```j``` index scan. 
 
-Naive benchmarking shows an improvement across the board over Julia's current Quicksort. For 10^4 samples of 10^5-element random integer arrays, we get
-
+Naive benchmarking shows an improvement across the board over Julia's current Quicksort. For each sample, we create an array of random integers, copy the array for each implementation, and time each implementation. The results are then normalized to the standard libary's sort time. This method on 10^4 samples of 10^5-element random integer arrays produces
+<h4 style="color:red;">...not up to date...</h4>
 <table>
     <thead>
         <tr>
 	    <th></th>
-	    <th>Mean</th>
-	    <th>Median</th>
+	    <th>Mean Ratio</th>
+	    <th>Median Ratio</th>
 	</tr>
     </thead>
     <tbody>
