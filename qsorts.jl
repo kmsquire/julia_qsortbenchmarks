@@ -185,6 +185,6 @@ qs_test_times = Array(Float64, numsims)
     @assert issorted(b)
 
 end
-
+@show(median(qs_test_times))
 @show(median(qs_test_times./qs_stdlib_times))
 @show(mean(qs_test_times./qs_stdlib_times))

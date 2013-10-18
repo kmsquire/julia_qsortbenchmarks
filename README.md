@@ -10,7 +10,7 @@ While looking at Julia's current implementation of Quicksort, several issues bec
 
 - Each pivot element is not guaranteed to be placed in its proper position in the array after each pass
  - the algorithm may have to look at more elements than are necessary
-- The algorithm fails to complete without the insertion sort optimization. The ```i``` scan runs out of bounds when scanning small arrays
+- The algorithm fails to complete without the insertion sort optimization. The ```j``` scan runs out of bounds when scanning small arrays
  - this isn't necessarily a huge issue since insertion sort is invoked for these small arrays 
 
 As a quick example, let's look at Julia's pure Quicksort on array ```[4, 10, 11, 24, 9]```, without the insertion sort optimization ```hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)```, and without the ```@inbounds``` macro.
@@ -62,3 +62,5 @@ Naive benchmarking shows an improvement across the board over Julia's current Qu
 	</tr>
     </tbody>
 </table>
+
+Any comments would be greatly appreciated. It would also be great to add different array permutations (sorted, semi-sorted) to the comparisons.
