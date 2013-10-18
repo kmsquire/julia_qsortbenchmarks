@@ -37,23 +37,23 @@ Naive benchmarking shows an improvement across the board over Julia's current Qu
     <tbody>
         <tr>
 	   <td>Canonical</td>
-	   <td>0.9472264</td>
-	   <td>0.9567886</td>
+	   <td>0.9178107</td>
+	   <td>0.9103574</td>
 	</tr>
         <tr>
 	   <td>Median-of-3 Pivot</td>
-	   <td>0.9462880</td>
-	   <td>0.9468467</td>
+	   <td>0.9475761</td>
+	   <td>0.9358107</td>
 	</tr>
         <tr>
 	   <td>Random Shuffle</td>
-	   <td>0.9372264</td>
-	   <td>0.9467886</td>
+	   <td>0.9215353</td>
+	   <td>0.9102481</td>
 	</tr>
         <tr>
 	   <td>Combo</td>
-	   <td>0.9422264</td>
-	   <td>0.9417886</td>
+	   <td>0.9467139</td>
+	   <td>0.9331511</td>
 	</tr>
     </tbody>
 </table>
