@@ -122,6 +122,25 @@ function qsort_c!(v, lo=1, hi=length(v))
     return v;        
 end
 
+# 3 way quicksort
+function qsort_3way!(v, lo=1, hi=length(v))
+    hi <= lo && return;
+    lt = lo; gt = hi; i = lo;
+    piv = v[lo];
+    while i <= gt
+        elem = v[i];
+        if isless(elem, piv)
+            v[i], v[lt] = v[lt], v[i];
+            lt+=1; i+=1;
+        elseif isless(piv, elem)
+            v[i], v[gt] = v[gt], v[i];
+            gt-=1;
+        else i+=1; end
+    end
+    qsort_3way!(v, lo, lt-1)
+    qsort_3way!(v, gt+1, hi)
+end
+
 # quicksort as written for the standard library
 function qsort_stdlib!(v, lo=1, hi=length(v))
     while lo < hi
@@ -161,14 +180,14 @@ toq()
 
 # ------------------- Benchmarking --------------------- #
 
-numsims = 10^2
+numsims = 10^3
 
 # arrays to store the sorting times
 
 qs_stdlib_times = Array(Float64, numsims)
 qs_test_times = Array(Float64, numsims)
 
-for i = 1:numsims
+@inbounds for i = 1:numsims
 
     b = rand(Int64, 1, a)
     c = copy(b)
