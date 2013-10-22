@@ -1,6 +1,6 @@
 motivation
 =====================
-
+<strong>...needs updating</strong>
 I started looking at Julia's Quicksort after finding [issue #939](https://github.com/JuliaLang/julia/issues/939?source=cc). The issue concerns the performance of ```sort!()```. For primitive datatypes, Julia invokes Quicksort, so the general purpose here is to increase the performance of the standard library implementation of Quicksort. 
 
 current implementation issues
