@@ -1,211 +1,201 @@
-require("qsort_c!.jl")
-require("qsort_stdlib.jl")
+const SMALL_THRESHOLD = 20
+const SMALL_THRESHOLD_STDLIB = 20
 
-# const SMALL_THRESHOLD = 20
-# const SMALL_THRESHOLD_STDLIB = 20
-
-# function isort(v, lo=1, hi=length(v))
-#     @inbounds for i = lo+1:hi
-#         j = i
-#         x = v[i]
-#         while j > lo
-#             if isless(x, v[j-1])
-#                 v[j] = v[j-1]
-#                 j -= 1
-#                 continue
-#             end
-#             break
-#         end
-#         v[j] = x
-#     end
-# end
-
-# function getmedpiv(v, a, b, c)
-#     if isless(v[a], v[b])
-#         if isless(v[b], v[c])
-#             return b
-#         elseif isless(v[a], v[c])
-#             return c
-#         else
-#             return a
-#         end
-#     else
-#         if isless(v[c], v[b])
-#             return b
-#         elseif isless(v[c], v[a])
-#             return c
-#         else
-#             return a
-#         end
-#     end
-# end
-
-# function fyshuffle(v)
-#     @inbounds begin
-#         N = length(v);
-#         for i = length(v):0
-#             j = rand(1:N-1);
-#             v[i], v[j] = v[j], v[i];
-#             N -= 1;
-#         end
-#     end
-# end
-
-
-# function qsort_c_fy!(v, lo=1, hi=length(v))
-#     fyshuffle(v)
-#     qsort_c!(v)
-# end
-
-
-# function qsort_c_fy_mp!(v, lo=1, hi=length(v))
-#     fyshuffle(v)
-#     qsort_c_mp!(v)
-# end
-
-
-# function qsort_c_mp!(v, lo=1, hi=length(v))
-#     hi <= lo && return;
-#     hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
-#     mi = (lo+hi)>>>1
-#     if v[lo] > v[mi]
-#         v[lo], v[mi] = v[mi], v[lo];
-#     end
-#     if v[lo] > v[hi] 
-#         v[lo], v[hi] = v[hi], v[lo];
-#     end
-#     if v[mi] > v[hi]
-#         v[mi], v[hi] = v[hi], v[mi];
-#     end
-#     v[mi], v[lo] = v[lo], v[mi]
-#     i, j = lo, hi+1;
-#     pivot = v[lo]
-#     while true;
-#         i += 1;
-#         while isless(v[i], pivot);
-#             i == hi && break;
-#             i += 1;
-#         end
-#         j -= 1;
-#         while isless(pivot, v[j]);
-#             j -= 1;
-#         end 
-#         i >= j && break;
-#         v[i], v[j] = v[j], v[i];
-#     end
-#     v[j], v[lo] = v[lo], v[j];
-#     qsort_c_mp!(v, lo, j-1);
-#     qsort_c_mp!(v, j+1, hi);
-#     return v;
-# end
-
-
-# function qsort_c!(v, lo=1, hi=length(v))        
-#     @inbounds begin
-#         hi <= lo && return;
-#         hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
-#         i, j = lo, hi+1;
-#         pivot = v[lo]
-#         while true;
-#             i += 1;
-#             while isless(v[i], pivot);
-#                 i == hi && break;
-#                 i += 1;
-#             end
-#             j -= 1;
-#             while isless(pivot, v[j]);
-#                 j -= 1;                
-#             end 
-#             i >= j && break;
-#             v[j], v[i] = v[i], v[j];
-#         end
-#         v[j], v[lo] = v[lo], v[j];
-#         qsort_c!(v, lo, j-1);
-#         qsort_c!(v, j+1, hi);
-#         return v;
-#     end
-# end
-
-# function qsort_3way!(v, lo=1, hi=length(v))
-#     hi <= lo && return;
-#     lt = lo; gt = hi; i = lo;
-#     piv = v[lo];
-#     while i <= gt
-#         elem = v[i];
-#         if isless(elem, piv)
-#             v[i], v[lt] = v[lt], v[i];
-#             lt+=1; i+=1;
-#         elseif isless(piv, elem)
-#             v[i], v[gt] = v[gt], v[i];
-#             gt-=1;
-#         else i+=1; end
-#     end
-#     qsort_3way!(v, lo, lt-1)
-#     qsort_3way!(v, gt+1, hi)
-# end
-
-# function qsort_stdlib!(v, lo=1, hi=length(v))
-#     @inbounds while lo < hi
-#         hi-lo <= SMALL_THRESHOLD_STDLIB && return isort(v, lo, hi)
-#         pivot = v[(lo+hi)>>>1]
-#         i, j = lo, hi
-#         while true;
-#             while isless(v[i], pivot); i += 1; end
-#             while isless(pivot, v[j]); j -= 1; end
-#             i <= j || break;
-#             v[i], v[j] = v[j], v[i]
-#             i += 1; j -= 1;
-#         end
-#         lo < j && qsort_stdlib!(v, lo, j)
-#         lo = i
-#     end
-#     return v;
-# end
-
-# ------------------------------------------------------- #
-# ------------------- Benchmarking ---------------------- #
-# ------------------------------------------------------- #
-
-bmark_algo = qsort_c!
-
-a = 10^4
-b = rand(Int64, 1, a)
-c = copy(b)
-
-# -------- Compile before running benchmarks ------------ #
-
-qsort_stdlib!(c, 1, a)
-bmark_algo(b, 1, a)
-
-tic()
-toq()
-
-# ------------------- Benchmarking --------------------- #
-
-numsims = 10^2
-
-# arrays to store the sorting times
-
-qs_stdlib_times = Array(Float64, numsims)
-qs_test_times = Array(Float64, numsims)
-
-@inbounds for i = 1:numsims
-
-    b = rand(Int64, 1, a)
-    c = copy(b)
-
-    tic()
-    qsort_stdlib!(c, 1, a)
-    qs_stdlib_times[i] = toq()
-
-    tic()
-    bmark_algo(b, 1, a)
-    qs_test_times[i] = toq()
-
-    @assert issorted(c)
-    @assert issorted(b)
-
+# insertion sort
+function isort(v, lo=1, hi=length(v))
+    @inbounds for i = lo+1:hi
+        j = i
+        x = v[i]
+        while j > lo
+            if isless(x, v[j-1])
+                v[j] = v[j-1]
+                j -= 1
+                continue
+            end
+            break
+        end
+        v[j] = x
+    end
+    return v;
 end
 
-# @show(median(qs_test_times./qs_stdlib_times))
-# @show(mean(qs_test_times./qs_stdlib_times))
+# fisher-yates shuffle
+function fyshuffle(v)
+    @inbounds begin
+        N = length(v);
+        for i = length(v):0
+            j = rand(1:N-1);
+            v[i], v[j] = v[j], v[i];
+            N -= 1;
+        end
+    end
+    return v;
+end
+
+# canonical quicksort + fisher-yates shuffle
+function qsort_c_fy!(v, lo=1, hi=length(v))
+    fyshuffle(v)
+    qsort_c!(v)
+end
+
+# ibid + median of 3 pivot
+function qsort_c_fy_mp!(v, lo=1, hi=length(v))
+    fyshuffle(v)
+    qsort_c_mp!(v)
+end
+
+# median of 3 pivot
+function qsort_c_mp!(v, lo=1, hi=length(v))
+    @inbounds begin
+        hi <= lo && return;
+        hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
+        mi = (lo+hi)>>>1
+        if v[lo] > v[mi]
+            v[lo], v[mi] = v[mi], v[lo];
+        end
+        if v[lo] > v[hi] 
+            v[lo], v[hi] = v[hi], v[lo];
+        end
+        if v[mi] > v[hi]
+            v[mi], v[hi] = v[hi], v[mi];
+        end
+        v[mi], v[lo] = v[lo], v[mi]
+        i, j = lo, hi+1;
+        pivot = v[lo]
+        while true;
+            i += 1;
+            while isless(v[i], pivot);
+                i == hi && break;
+                i += 1;
+            end
+            j -= 1;
+            while isless(pivot, v[j]);
+                j -= 1;
+            end 
+            i >= j && break;
+            v[i], v[j] = v[j], v[i];
+        end
+        v[j], v[lo] = v[lo], v[j];
+        qsort_c_mp!(v, lo, j-1);
+        qsort_c_mp!(v, j+1, hi);
+    end
+    return v;
+end
+
+# random pivot
+function qsort_c_rp!(v, lo=1, hi=length(v))
+    hi <= lo && return;
+    hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
+    i, j = lo, hi+1;
+    rp = rand(lo:hi)
+    v[lo], v[rp] = v[rp], v[lo]
+    pivot = v[lo]
+    while true;
+        i += 1;
+        while isless(v[i], pivot);
+            i == hi && break;
+            i += 1;
+        end
+        j -= 1;
+        while isless(pivot, v[j]);
+            j -= 1;                
+        end 
+        i >= j && break;
+        v[i], v[j] = v[j], v[i]
+    end
+    v[lo], v[j] = v[j], v[lo]
+    qsort_c!(v, lo, j-1);
+    qsort_c!(v, j+1, hi);
+    return v;
+end
+
+# canonical, @inbounds macro
+function qsort_c!(v, lo=1, hi=length(v))        
+    @inbounds begin
+        hi <= lo && return;
+        hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
+        i, j = lo, hi+1;
+        pivot = v[lo]
+        while true;
+            i += 1;
+            while isless(v[i], pivot);
+                i == hi && break;
+                i += 1;
+            end
+            j -= 1;
+            while isless(pivot, v[j]);
+                j -= 1;                
+            end 
+            i >= j && break;
+            v[i], v[j] = v[j], v[i]
+        end
+        v[lo], v[j] = v[j], v[lo]
+        qsort_c!(v, lo, j-1);
+        qsort_c!(v, j+1, hi);
+    end
+    return v;
+end
+
+# canonical, no @inbounds, bounds-checking
+function qsort_c_bc!(v, lo=1, hi=length(v))        
+    hi <= lo && return;
+    hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
+    i, j = lo, hi+1;
+    pivot = v[lo]
+    while true;
+        i += 1;
+        while isless(v[i], pivot);
+            i == hi && break;
+            i += 1;
+        end
+        j -= 1;
+        while isless(pivot, v[j]);
+            j -= 1;                
+        end 
+        i >= j && break;
+        v[i], v[j] = v[j], v[i]
+    end
+    v[lo], v[j] = v[j], v[lo]
+    qsort_c!(v, lo, j-1);
+    qsort_c!(v, j+1, hi);
+    return v;
+end
+
+# 3way quicksort
+function qsort_3way!(v, lo=1, hi=length(v))
+    hi <= lo && return;
+    lt = lo; gt = hi; i = lo;
+    piv = v[lo];
+    while i <= gt
+        elem = v[i];
+        if isless(elem, piv)
+            v[i], v[lt] = v[lt], v[i];
+            lt+=1; i+=1;
+        elseif isless(piv, elem)
+            v[i], v[gt] = v[gt], v[i];
+            gt-=1;
+        else i+=1; end
+    end
+    qsort_3way!(v, lo, lt-1)
+    qsort_3way!(v, gt+1, hi)
+    return v;
+end
+
+# julia's current implementation as of v0.2
+function qsort_stdlib!(v, lo=1, hi=length(v))    
+    @inbounds while lo < hi
+        hi-lo <= SMALL_THRESHOLD_STDLIB && return isort(v, lo, hi)
+        pivot = v[(lo+hi)>>>1]
+        i, j = lo, hi
+        while true;
+            while isless(v[i], pivot); i += 1; end
+            while isless(pivot, v[j]); j -= 1; end
+            i <= j || break;
+            v[i], v[j] = v[j], v[i]
+            i += 1; j -= 1;
+        end
+        lo < j && qsort_stdlib!(v, lo, j)
+        lo = i
+    end
+    return v;
+end
