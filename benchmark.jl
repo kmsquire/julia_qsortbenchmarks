@@ -117,10 +117,10 @@ c = copy(b)
 d = copy(b)
 e = copy(b)
 
-qsort_stdlib!(c, 1, a)
+qsort_stdlib!(b, 1, a)
 qsort_stdlib_CHECKBOUNDS!(c, 1, a)
-qsort_c!(b, 1, a)
-qsort_c_CHECKBOUNDS!(c, 1, a)
+qsort_c!(d, 1, a)
+qsort_c_CHECKBOUNDS!(e, 1, a)
 
 tic()
 toq()
@@ -129,7 +129,7 @@ toq()
 # ------------------- Benchmarking ---------------------- #
 # ------------------------------------------------------- #
 
-numsims = 10^4
+numsims = 10^5
 qs_stdlib_times = Array(Float64, numsims)
 qs_stdlib_CHECKBOUNDS_times = Array(Float64, numsims)
 qs_c_times = Array(Float64, numsims)
@@ -143,20 +143,20 @@ for i = 1:numsims
     e = copy(b)
 
     tic()
-    qsort_stdlib!(c)
+    qsort_stdlib!(b)
     qs_stdlib_times[i] = toq()
 
     tic()
-    qsort_stdlib_CHECKBOUNDS!(e)
+    qsort_stdlib_CHECKBOUNDS!(c)
     qs_stdlib_CHECKBOUNDS_times[i] = toq()
 
 
     tic()
-    qsort_c!(b)
+    qsort_c!(d)
     qs_c_times[i] = toq()
 
     tic()
-    qsort_c_CHECKBOUNDS!(d)
+    qsort_c_CHECKBOUNDS!(e)
     qs_c_CHECKBOUNDS_times[i] = toq()
     
     @assert issorted(b)
@@ -168,6 +168,9 @@ end
 
 @show(median(qs_c_times./qs_stdlib_times))
 @show(mean(qs_c_times./qs_stdlib_times))
+
+@show(median(qs_c_CHECKBOUNDS_times./qs_stdlib_CHECKBOUNDS_times))
+@show(mean(qs_c_CHECKBOUNDS_times./qs_stdlib_CHECKBOUNDS_times))
 
 @show(median(qs_c_CHECKBOUNDS_times./qs_c_times))
 @show(mean(qs_c_CHECKBOUNDS_times./qs_c_times))
