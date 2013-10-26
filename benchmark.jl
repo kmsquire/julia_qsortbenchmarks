@@ -1,85 +1,176 @@
-require("qsorts.jl")
+const SMALL_THRESHOLD = 20
 
-# ------------------------------------------------------- #
-# ------------------- Benchmarking ---------------------- #
-# ------------------------------------------------------- #
+# insertion sort
+function isort(v, lo=1, hi=length(v))
+    @inbounds for i = lo+1:hi
+        j = i
+        x = v[i]
+        while j > lo
+            if isless(x, v[j-1])
+                v[j] = v[j-1]
+                j -= 1
+                continue
+            end
+            break
+        end
+        v[j] = x
+    end
+    return v;
+end
 
-a = 10^3
+# julia's current implementation as of v0.2
+function qsort_stdlib!(v, lo=1, hi=length(v))    
+    @inbounds while lo < hi
+        hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
+        pivot = v[(lo+hi)>>>1]
+        i, j = lo, hi
+        while true;
+            while isless(v[i], pivot); i += 1; end
+            while isless(pivot, v[j]); j -= 1; end
+            i <= j || break;
+            v[i], v[j] = v[j], v[i]
+            i += 1; j -= 1;
+        end
+        lo < j && qsort_stdlib!(v, lo, j)
+        lo = i
+    end
+    return v;
+end
+
+# julia's current implementation as of v0.2, checks the bounds
+function qsort_stdlib_CHECKBOUNDS!(v, lo=1, hi=length(v))    
+    while lo < hi
+        hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
+        pivot = v[(lo+hi)>>>1]
+        i, j = lo, hi
+        while true;
+            while isless(v[i], pivot); i += 1; end
+            while isless(pivot, v[j]); j -= 1; end
+            i <= j || break;
+            v[i], v[j] = v[j], v[i]
+            i += 1; j -= 1;
+        end
+        lo < j && qsort_stdlib!(v, lo, j)
+        lo = i
+    end
+    return v;
+end
+
+
+# canonical
+function qsort_c!(v, lo=1, hi=length(v))
+    @inbounds begin
+        hi <= lo && return;
+        hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
+        i, j = lo, hi+1;
+        pivot = v[lo]
+        while true;
+            i += 1;
+            while isless(v[i], pivot);
+                i == hi && break;
+                i += 1;
+            end
+            j -= 1;
+            while isless(pivot, v[j]);
+                j -= 1;                
+            end 
+            i >= j && break;
+            v[i], v[j] = v[j], v[i]
+        end
+        v[lo], v[j] = v[j], v[lo]
+        qsort_c!(v, lo, j-1);
+        qsort_c!(v, j+1, hi);
+    end
+    return v;
+end
+
+# canonical, checks the bounds
+function qsort_c_CHECKBOUNDS!(v, lo=1, hi=length(v))
+    hi <= lo && return;
+    hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
+    i, j = lo, hi+1;
+    pivot = v[lo]
+    while true;
+        i += 1;
+        while isless(v[i], pivot);
+            i == hi && break;
+            i += 1;
+        end
+        j -= 1;
+        while isless(pivot, v[j]);
+            j -= 1;                
+        end 
+        i >= j && break;
+        v[i], v[j] = v[j], v[i]
+    end
+    v[lo], v[j] = v[j], v[lo]
+    qsort_c!(v, lo, j-1);
+    qsort_c!(v, j+1, hi);
+    return v;
+end
+
+# -------- Compile before running benchmarks ------------ #
+
+a = 10^4
 b = rand(Int64, 1, a)
 c = copy(b)
 d = copy(b)
 e = copy(b)
 
-# -------- Compile before running benchmarks ------------ #
-
 qsort_stdlib!(c, 1, a)
+qsort_stdlib_CHECKBOUNDS!(c, 1, a)
 qsort_c!(b, 1, a)
-qsort_c_bc!(d, 1, a)
+qsort_c_CHECKBOUNDS!(c, 1, a)
 
 tic()
 toq()
 
-# ------------------- Benchmarking --------------------- #
+# ------------------------------------------------------- #
+# ------------------- Benchmarking ---------------------- #
+# ------------------------------------------------------- #
 
-function getarray(arraytype, length)
-    a = rand(Int64, 1, length)
-    arraytype == "random" && return a;
-    arraytype == "sorted" && return qsort_c!(a)
-    sample = log(length) - 2
-    for i=1:length 
-        if i % 4*10^sample == 0 && (i + 10^sample) < length
-            a = qsort_c!(a, i, i + 10^sample)
-        end
-    end
-    return a;
+numsims = 10^4
+qs_stdlib_times = Array(Float64, numsims)
+qs_stdlib_CHECKBOUNDS_times = Array(Float64, numsims)
+qs_c_times = Array(Float64, numsims)
+qs_c_CHECKBOUNDS_times = Array(Float64, numsims)
+
+for i = 1:numsims
+
+    b = rand(Int64, 1, a)
+    c = copy(b)
+    d = copy(b)
+    e = copy(b)
+
+    tic()
+    qsort_stdlib!(c)
+    qs_stdlib_times[i] = toq()
+
+    tic()
+    qsort_stdlib_CHECKBOUNDS!(e)
+    qs_stdlib_CHECKBOUNDS_times[i] = toq()
+
+
+    tic()
+    qsort_c!(b)
+    qs_c_times[i] = toq()
+
+    tic()
+    qsort_c_CHECKBOUNDS!(d)
+    qs_c_CHECKBOUNDS_times[i] = toq()
+    
+    @assert issorted(b)
+    @assert issorted(c)
+    @assert issorted(d)
+    @assert issorted(e)
+    
 end
 
-# eventually to change around the pivot
-for pivsize = [20]
+@show(median(qs_c_times./qs_stdlib_times))
+@show(mean(qs_c_times./qs_stdlib_times))
 
-    for arraysize in [10^2, 10^3, 10^4, 10^5]
+@show(median(qs_c_CHECKBOUNDS_times./qs_c_times))
+@show(mean(qs_c_CHECKBOUNDS_times./qs_c_times))
 
-        numsims = 10^4
-        qs_stdlib_times = Array(Float64, numsims)
-        qs_c_times = Array(Float64, numsims)
-        qs_c_bc_times = Array(Float64, numsims)
-
-        for i = 1:numsims
-
-            b = getarray("random", arraysize)
-            c = copy(b)
-            d = copy(b)
-
-            tic()
-            qsort_c!(b)
-            qs_c_times[i] = toq()
-
-            tic()
-            qsort_c_bc!(d)
-            qs_c_bc_times[i] = toq()
-            
-            tic()
-            qsort_stdlib!(c)
-            qs_stdlib_times[i] = toq()
-
-            @assert issorted(c)
-            @assert issorted(b)
-            @assert issorted(d)
-
-        end
-
-        print("-------------")
-        print(arraysize)
-        println("-------------")
-
-        @show(median(qs_c_bc_times./qs_c_times))
-        @show(mean(qs_c_bc_times./qs_c_times))
-
-        @show(median(qs_c_times./qs_stdlib_times))
-        @show(mean(qs_c_times./qs_stdlib_times))
-
-        @show(median(qs_c_bc_times./qs_stdlib_times))
-        @show(mean(qs_c_bc_times./qs_stdlib_times))
-
-    end
-end
+@show(median(qs_stdlib_CHECKBOUNDS_times./qs_stdlib_times))
+@show(mean(qs_stdlib_CHECKBOUNDS_times./qs_stdlib_times))
