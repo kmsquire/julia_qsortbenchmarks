@@ -50,18 +50,28 @@ function qsort_stdlib_CHECKBOUNDS!(v, lo=1, hi=length(v))
             v[i], v[j] = v[j], v[i]
             i += 1; j -= 1;
         end
-        lo < j && qsort_stdlib!(v, lo, j)
+        lo < j && qsort_stdlib_CHECKBOUNDS!(v, lo, j)
         lo = i
     end
     return v;
 end
 
-
-# canonical
+# median pivot
 function qsort_c!(v, lo=1, hi=length(v))
     @inbounds begin
         hi <= lo && return;
         hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
+        mi = (lo+hi)>>>1
+        if v[lo] > v[mi]
+            v[lo], v[mi] = v[mi], v[lo];
+        end
+        if v[lo] > v[hi] 
+            v[lo], v[hi] = v[hi], v[lo];
+        end
+        if v[mi] > v[hi]
+            v[mi], v[hi] = v[hi], v[mi];
+        end
+        v[mi], v[lo] = v[lo], v[mi]
         i, j = lo, hi+1;
         pivot = v[lo]
         while true;
@@ -72,22 +82,33 @@ function qsort_c!(v, lo=1, hi=length(v))
             end
             j -= 1;
             while isless(pivot, v[j]);
-                j -= 1;                
+                j -= 1;
             end 
             i >= j && break;
-            v[i], v[j] = v[j], v[i]
+            v[i], v[j] = v[j], v[i];
         end
-        v[lo], v[j] = v[j], v[lo]
+        v[j], v[lo] = v[lo], v[j];
         qsort_c!(v, lo, j-1);
         qsort_c!(v, j+1, hi);
     end
     return v;
 end
 
-# canonical, checks the bounds
+# median pivot, checks the bounds
 function qsort_c_CHECKBOUNDS!(v, lo=1, hi=length(v))
     hi <= lo && return;
     hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
+    mi = (lo+hi)>>>1
+    if v[lo] > v[mi]
+        v[lo], v[mi] = v[mi], v[lo];
+    end
+    if v[lo] > v[hi] 
+        v[lo], v[hi] = v[hi], v[lo];
+    end
+    if v[mi] > v[hi]
+        v[mi], v[hi] = v[hi], v[mi];
+    end
+    v[mi], v[lo] = v[lo], v[mi]
     i, j = lo, hi+1;
     pivot = v[lo]
     while true;
@@ -98,20 +119,20 @@ function qsort_c_CHECKBOUNDS!(v, lo=1, hi=length(v))
         end
         j -= 1;
         while isless(pivot, v[j]);
-            j -= 1;                
+            j -= 1;
         end 
         i >= j && break;
-        v[i], v[j] = v[j], v[i]
+        v[i], v[j] = v[j], v[i];
     end
-    v[lo], v[j] = v[j], v[lo]
-    qsort_c!(v, lo, j-1);
-    qsort_c!(v, j+1, hi);
+    v[j], v[lo] = v[lo], v[j];
+    qsort_c_CHECKBOUNDS!(v, lo, j-1);
+    qsort_c_CHECKBOUNDS!(v, j+1, hi);
     return v;
 end
 
 # -------- Compile before running benchmarks ------------ #
 
-a = 10^4
+a = 10^3
 b = rand(Int64, 1, a)
 c = copy(b)
 d = copy(b)
@@ -129,14 +150,13 @@ toq()
 # ------------------- Benchmarking ---------------------- #
 # ------------------------------------------------------- #
 
-numsims = 10^5
+numsims = 10^4
 qs_stdlib_times = Array(Float64, numsims)
 qs_stdlib_CHECKBOUNDS_times = Array(Float64, numsims)
 qs_c_times = Array(Float64, numsims)
 qs_c_CHECKBOUNDS_times = Array(Float64, numsims)
 
 for i = 1:numsims
-
     b = rand(Int64, 1, a)
     c = copy(b)
     d = copy(b)
@@ -149,7 +169,6 @@ for i = 1:numsims
     tic()
     qsort_stdlib_CHECKBOUNDS!(c)
     qs_stdlib_CHECKBOUNDS_times[i] = toq()
-
 
     tic()
     qsort_c!(d)

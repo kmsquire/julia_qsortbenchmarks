@@ -156,8 +156,8 @@ function qsort_3way!(v, lo=1, hi=length(v))
         end
         qsort_3way!(v, lo, lt-1)
         qsort_3way!(v, gt+1, hi)
-        return v;
     end
+    return v;
 end
 
 # julia's current implementation as of v0.2
