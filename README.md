@@ -69,11 +69,9 @@ When all algorithms have ```@inbounds```, there is not an apparent speed improve
 <tr>
 <th>Array Size</th><th>Mean Ratio</th><th>Median Ratio</th>
 </tr>
-<tr>
-<td>10^3</td><td>0.999</td><td>0.998</td>
-<td>10^4</td><td>1.011</td><td>1.016</td>
-<td>10^5</td><td>1.011</td><td>1.018</td>
-</tr>
+<tr><td>10^3</td><td>0.999</td><td>0.998</td></tr>
+<tr><td>10^4</td><td>1.011</td><td>1.016</td></tr>
+<tr><td>10^5</td><td>1.011</td><td>1.018</td></tr>
 </table>
 
 Any comments would be greatly appreciated. It would also be great to add different array permutations (sorted, semi-sorted) to the comparisons.
