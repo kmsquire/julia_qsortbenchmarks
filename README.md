@@ -30,7 +30,7 @@ Some low-hanging fruit optimizations were made to the canonical example, specifi
 
 Naive benchmarking shows a speed and memory footprint improvement across the board over Julia's current Quicksort <strong>when all algorithms lack the ```@inbounds```</strong> macro. For each sample, we create an array of random integers, copy the array for each implementation, and time each implementation. The results are then normalized to the standard libary's sort time. This method on 10^4 samples of 10^5-element random integer arrays produces
 
-<h4>All algorithms without ```@inbounds``` macro</h4>
+<h5>All algorithms without ```@inbounds``` macro</h5>
 <table>
     <thead>
         <tr>
@@ -62,6 +62,8 @@ Naive benchmarking shows a speed and memory footprint improvement across the boa
 	</tr>
     </tbody>
 </table>
+
+<h5>Comparisons when including the ```@inbounds``` macro</h5>
 
 When all algorithms have ```@inbounds```, there is not an apparent speed improvement over the current algorithm for large random integer arrays. The following are results for the median of three pivot quicksort benchmarked against the standard library implementation, with 10^4 simulations, when both have the ```@inbounds``` macro.
 
