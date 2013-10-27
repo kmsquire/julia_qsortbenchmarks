@@ -30,7 +30,7 @@ Some low-hanging fruit optimizations were made to the canonical example, specifi
 
 Naive benchmarking shows a speed and memory footprint improvement across the board over Julia's current Quicksort <strong>when all algorithms lack the ```@inbounds```</strong> macro. For each sample, we create an array of random integers, copy the array for each implementation, and time each implementation. The results are then normalized to the standard libary's sort time. This method on 10^4 samples of 10^5-element random integer arrays produces
 
-<h3>All algorithms without ```@inbounds``` macro</h3>
+<h4>All algorithms without ```@inbounds``` macro</h4>
 <table>
     <thead>
         <tr>
@@ -66,14 +66,14 @@ Naive benchmarking shows a speed and memory footprint improvement across the boa
 When all algorithms have ```@inbounds```, there is not an apparent speed improvement over the current algorithm for large random integer arrays. The following are results for the median of three pivot quicksort benchmarked against the standard library implementation, with 10^4 simulations, when both have the ```@inbounds``` macro.
 
 <table>
-<td>
+<tr>
 <th>Array Size</th><th>Mean Ratio</th><th>Median Ratio</th>
-</td>
-<td>
-<tr>10^3</tr><tr>0.999</tr><tr>0.998</tr>
-<tr>10^4</tr><tr>1.011</tr><tr>1.016</tr>
-<tr>10^5</tr><tr>1.011</tr><tr>1.018</tr>
-</td>
+</tr>
+<tr>
+<td>10^3</td><td>0.999</td><td>0.998</td>
+<td>10^4</td><td>1.011</td><td>1.016</td>
+<td>10^5</td><td>1.011</td><td>1.018</td>
+</tr>
 </table>
 
 Any comments would be greatly appreciated. It would also be great to add different array permutations (sorted, semi-sorted) to the comparisons.
