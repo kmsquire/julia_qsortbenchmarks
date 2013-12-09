@@ -45,8 +45,7 @@ end
 
 # median of 3 pivot
 function qsort_c_mp!(v, lo=1, hi=length(v))
-    @inbounds begin
-        hi <= lo && return;
+    @inbounds while lo < hi
         hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
         mi = (lo+hi)>>>1
         if v[lo] > v[mi]
@@ -76,15 +75,14 @@ function qsort_c_mp!(v, lo=1, hi=length(v))
         end
         v[j], v[lo] = v[lo], v[j];
         qsort_c_mp!(v, lo, j-1);
-        qsort_c_mp!(v, j+1, hi);
+        lo = j+1
     end
     return v;
 end
 
 # random pivot
 function qsort_c_rp!(v, lo=1, hi=length(v))
-    @inbounds begin
-        hi <= lo && return;
+    @inbounds while lo < hi
         hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
         i, j = lo, hi+1;
         rp = rand(lo:hi)
@@ -105,15 +103,14 @@ function qsort_c_rp!(v, lo=1, hi=length(v))
         end
         v[lo], v[j] = v[j], v[lo]
         qsort_c!(v, lo, j-1);
-        qsort_c!(v, j+1, hi);
-        return v;
+        lo = j+1
     end
+    return v;
 end
 
 # canonical, @inbounds macro
 function qsort_c!(v, lo=1, hi=length(v))        
-    @inbounds begin
-        hi <= lo && return;
+    @inbounds while lo < hi
         hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
         i, j = lo, hi+1;
         pivot = v[lo]
@@ -132,15 +129,14 @@ function qsort_c!(v, lo=1, hi=length(v))
         end
         v[lo], v[j] = v[j], v[lo]
         qsort_c!(v, lo, j-1);
-        qsort_c!(v, j+1, hi);
+        lo = j+1
     end
     return v;
 end
 
 # 3way quicksort
 function qsort_3way!(v, lo=1, hi=length(v))
-    @inbounds begin
-        hi <= lo && return;
+    @inbounds while lo < hi
         hi-lo <= SMALL_THRESHOLD && return isort(v, lo, hi)
         lt = lo; gt = hi; i = lo;
         piv = v[lo];
@@ -155,7 +151,7 @@ function qsort_3way!(v, lo=1, hi=length(v))
             else i+=1; end
         end
         qsort_3way!(v, lo, lt-1)
-        qsort_3way!(v, gt+1, hi)
+        lo = gt+1
     end
     return v;
 end
