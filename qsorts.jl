@@ -58,22 +58,18 @@ function qsort_c_mp!(v, lo=1, hi=length(v))
             v[mi], v[hi] = v[hi], v[mi];
         end
         v[mi], v[lo] = v[lo], v[mi]
-        i, j = lo, hi+1;
+        v_hi,  v[hi] = v[hi], v[lo]
+        i, j = lo+1, hi-1;
         pivot = v[lo]
         while true;
-            i += 1;
-            while isless(v[i], pivot);
-                i == hi && break;
-                i += 1;
-            end
-            j -= 1;
-            while isless(pivot, v[j]);
-                j -= 1;
-            end 
+            while isless(v[i], pivot); i += 1; end
+            while isless(pivot, v[j]); j -= 1; end 
             i >= j && break;
             v[i], v[j] = v[j], v[i];
+            i += 1; j -= 1
         end
         v[j], v[lo] = v[lo], v[j];
+        v[hi] = v_hi
         qsort_c_mp!(v, lo, j-1);
         lo = j+1
     end
